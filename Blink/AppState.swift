@@ -23,11 +23,12 @@ final class AppState {
     private var killedPorts: Set<Int> = []
     private var killedSimUDIDs: Set<String> = []
 
+    private(set) var isActive: Bool = false
     var totalCount: Int { servers.count + simulators.count }
 
     // MARK: - Blink Events
 
-    enum BlinkEvent {
+    enum BlinkEvent: Equatable {
         case idle
         case active
         case scanning
@@ -59,7 +60,6 @@ final class AppState {
     func refresh() async {
         guard !isScanning else { return }
         isScanning = true
-        lastEvent = .scanning
         defer { isScanning = false }
 
         let previousCount = totalCount
@@ -77,16 +77,34 @@ final class AppState {
         let activeSimUDIDs = Set(newSims.map(\.id))
         killedSimUDIDs = killedSimUDIDs.intersection(activeSimUDIDs)
 
-        servers = newServers.filter { !killedPIDs.contains($0.id) && !killedPorts.contains($0.port) }
-        simulators = newSims.filter { !killedSimUDIDs.contains($0.id) }
-        isInitialLoad = false
+        let filteredServers = newServers.filter { !killedPIDs.contains($0.id) && !killedPorts.contains($0.port) }
+        let filteredSims = newSims.filter { !killedSimUDIDs.contains($0.id) }
+
+        // Only update observed properties when values actually change
+        if servers != filteredServers {
+            servers = filteredServers
+        }
+        if simulators != filteredSims {
+            simulators = filteredSims
+        }
+        if isInitialLoad {
+            isInitialLoad = false
+        }
+
+        let nowActive = totalCount > 0
+        if isActive != nowActive {
+            isActive = nowActive
+        }
 
         if totalCount > previousCount {
             lastEvent = .newDetected
             try? await Task.sleep(for: .seconds(0.6))
         }
 
-        lastEvent = totalCount > 0 ? .active : .idle
+        let newEvent: BlinkEvent = totalCount > 0 ? .active : .idle
+        if lastEvent != newEvent {
+            lastEvent = newEvent
+        }
     }
 
     // MARK: - Actions
@@ -218,7 +236,7 @@ private extension AppState {
         let ports = await PortScanner.scan()
 
         let devPorts = ports.filter { port in
-            Self.devCommands.contains(port.command)
+            Self.devCommands.contains(port.command.lowercased())
         }
 
         // Deduplicate by port (IPv4 + IPv6) and by PID (multi-port servers)

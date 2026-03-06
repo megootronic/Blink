@@ -11,9 +11,9 @@ enum MenuBarIcon {
     private static let iconSize: CGFloat = 22
 
     @MainActor
-    static func render(count: Int) -> NSImage {
+    static func render(isActive: Bool) -> NSImage {
         let size = NSSize(width: iconSize, height: iconSize)
-        let eyeState: RobotHead.EyeState = count > 0 ? .open : .halfClosed
+        let eyeState: RobotHead.EyeState = isActive ? .open : .halfClosed
 
         let view = MenuBarRobot(size: iconSize, eyeState: eyeState)
 

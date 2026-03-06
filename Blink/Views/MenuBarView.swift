@@ -20,6 +20,7 @@ struct MenuBarView: View {
         }
         .frame(width: 320, height: 420)
         .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
 

@@ -40,12 +40,6 @@ struct WelcomeView: View {
         .frame(width: 320, height: 380)
         .opacity(appeared ? 1 : 0)
         .onAppear {
-            if hasLaunchedBefore {
-                DispatchQueue.main.async {
-                    NSApp.keyWindow?.close()
-                }
-                return
-            }
             withAnimation(.easeOut(duration: 0.5)) {
                 appeared = true
             }
@@ -146,6 +140,6 @@ struct WelcomeView: View {
 
     private func dismiss() {
         hasLaunchedBefore = true
-        NSApp.keyWindow?.close()
+        WelcomeWindowController.close()
     }
 }
