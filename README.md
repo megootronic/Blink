@@ -1,8 +1,7 @@
-<p align="center">
-  <img src=".github/icon.png" width="128" alt="Blink icon" />
-</p>
-
-<h1 align="center">Blink</h1>
+<h1 align="center">
+  <img src=".github/icon.png" width="144" alt="" /><br />
+  Blink
+</h1>
 
 <p align="center">
 A little robot that lives in your menu bar and keeps an eye on your running dev servers and iOS simulators.
