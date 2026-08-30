@@ -1,10 +1,3 @@
-//
-//  SimulatorMonitor.swift
-//  Blink
-//
-//  Monitors booted iOS simulators via simctl
-//
-
 import Foundation
 
 enum SimulatorMonitor {
@@ -21,12 +14,11 @@ enum SimulatorMonitor {
         return await withTaskGroup(of: (Int, Simulator).self) { group in
             for (index, device) in devices.enumerated() {
                 group.addTask {
-                    let app = await resolveRunningApp(udid: device.id)
+                    let app = await resolveRunningApp(udid: device.udid)
                     return (index, Simulator(
-                        id: device.id,
+                        udid: device.udid,
                         name: device.name,
                         runtime: device.runtime,
-                        state: device.state,
                         runningApp: app
                     ))
                 }
@@ -35,6 +27,26 @@ enum SimulatorMonitor {
             for await pair in group { results.append(pair) }
             return results.sorted { $0.0 < $1.0 }.map(\.1)
         }
+    }
+
+    static func relaunchApp(udid: String, bundleID: String) async -> String? {
+        _ = await Shell.run(
+            "/usr/bin/xcrun",
+            arguments: ["simctl", "terminate", udid, bundleID]
+        )
+
+        let output = await Shell.run(
+            "/usr/bin/xcrun",
+            arguments: ["simctl", "launch", udid, bundleID],
+            mergingErrors: true
+        )?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+        if output.contains(bundleID), output.contains(":"),
+           output.range(of: #":\s*\d+$"#, options: .regularExpression) != nil {
+            return nil
+        }
+
+        return output.isEmpty ? "Simulator wouldn't relaunch the app." : output
     }
 
     static func shutdown(udid: String) async {
@@ -70,10 +82,9 @@ private extension SimulatorMonitor {
                 .filter { $0.state == "Booted" }
                 .map { device in
                     Simulator(
-                        id: device.udid,
+                        udid: device.udid,
                         name: device.name,
                         runtime: formatRuntime(runtimeKey),
-                        state: device.state,
                         runningApp: nil
                     )
                 }
@@ -91,7 +102,6 @@ private extension SimulatorMonitor {
 
     // MARK: - Running App Detection
 
-    /// Queries launchctl inside the simulator to find running user apps
     static func resolveRunningApp(udid: String) async -> Simulator.AppInfo? {
         guard let output = await Shell.run(
             "/usr/bin/xcrun",
@@ -100,10 +110,6 @@ private extension SimulatorMonitor {
             return nil
         }
 
-        // Parse for UIKitApplication entries with a running PID (not "-")
-        // Format: "PID\tStatus\tLabel"
-        // Running apps: "12345\t0\tUIKitApplication:com.example.app[0xABC][rb-legacy]"
-        // Stopped apps: "-\t0\tUIKitApplication:com.example.app[0xABC][rb-legacy]"
         let bundleIDs = output.components(separatedBy: .newlines).compactMap { line -> String? in
             guard line.contains("UIKitApplication:") else { return nil }
             let columns = line.split(separator: "\t", maxSplits: 2)
@@ -124,7 +130,6 @@ private extension SimulatorMonitor {
         )
     }
 
-    /// Gets the app container path and reads CFBundleDisplayName / CFBundleName
     static func resolveAppName(udid: String, bundleID: String) async -> String? {
         guard let containerPath = await Shell.run(
             "/usr/bin/xcrun",

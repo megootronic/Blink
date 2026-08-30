@@ -1,10 +1,3 @@
-//
-//  EmptyStateView.swift
-//  Blink
-//
-//  Displayed when no servers or simulators are running
-//
-
 import SwiftUI
 
 struct EmptyStateView: View {
@@ -37,11 +30,9 @@ struct EmptyStateView: View {
         .onAppear { startAnimations() }
     }
 
-    // MARK: - Floating Zs
-
     private func floatingZ(opacity: Double, offset: CGFloat, x: CGFloat, delay: Double) -> some View {
         Text("z")
-            .font(.system(size: 10, weight: .medium, design: .rounded))
+            .font(.system(size: 10, weight: .medium))
             .foregroundStyle(.secondary)
             .opacity(opacity)
             .offset(x: x, y: -20 + offset)

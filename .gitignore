@@ -11,3 +11,6 @@ build/
 
 # macOS
 .DS_Store
+
+# Design sources — kept local, not shipped
+Design/

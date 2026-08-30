@@ -1,40 +1,146 @@
-//
-//  ProcessResolver.swift
-//  Blink
-//
-//  Resolves process details: working directory, arguments, framework
-//
-
 import Foundation
 
 struct ResolvedProcess {
     let pid: Int
     let arguments: String
     let workingDirectory: String
-    let startTime: Date
 }
 
 enum ProcessResolver {
-
     // MARK: - Process Details
 
     static func resolve(pid: Int) async -> ResolvedProcess? {
         async let argsResult = Shell.run("/bin/ps", arguments: ["-p", "\(pid)", "-o", "args="])
         async let cwdResult = Shell.run("/usr/sbin/lsof", arguments: ["-d", "cwd", "-a", "-p", "\(pid)", "-Fn"])
-        async let timeResult = Shell.run("/bin/ps", arguments: ["-p", "\(pid)", "-o", "lstart="])
 
         guard let args = await argsResult?.trimmingCharacters(in: .whitespacesAndNewlines),
               !args.isEmpty else { return nil }
 
         let cwd = await parseCWD(cwdResult ?? "")
-        let startTime = await parseStartTime(timeResult ?? "")
 
         return ResolvedProcess(
             pid: pid,
             arguments: args,
-            workingDirectory: cwd,
-            startTime: startTime ?? Date()
+            workingDirectory: cwd
         )
+    }
+
+    // MARK: - Real argv
+
+    struct LaunchInfo {
+        let executablePath: String
+        let argv: [String]
+    }
+
+    static func launchInfo(pid: Int) -> LaunchInfo {
+        var mib: [Int32] = [CTL_KERN, KERN_PROCARGS2, Int32(pid)]
+        var size = 0
+
+        guard sysctl(&mib, 3, nil, &size, nil, 0) == 0, size > MemoryLayout<Int32>.size else {
+            return LaunchInfo(executablePath: "", argv: [])
+        }
+
+        var buffer = [UInt8](repeating: 0, count: size)
+        guard sysctl(&mib, 3, &buffer, &size, nil, 0) == 0,
+              size > MemoryLayout<Int32>.size else {
+            return LaunchInfo(executablePath: "", argv: [])
+        }
+
+        let argc = buffer.withUnsafeBytes { $0.loadUnaligned(as: Int32.self) }
+        guard argc > 0 else { return LaunchInfo(executablePath: "", argv: []) }
+
+        var index = MemoryLayout<Int32>.size
+
+        var executable: [UInt8] = []
+        while index < size, buffer[index] != 0 {
+            executable.append(buffer[index])
+            index += 1
+        }
+        while index < size, buffer[index] == 0 { index += 1 }
+
+        var result: [String] = []
+        var current: [UInt8] = []
+
+        while index < size, result.count < Int(argc) {
+            if buffer[index] == 0 {
+                result.append(String(decoding: current, as: UTF8.self))
+                current.removeAll(keepingCapacity: true)
+            } else {
+                current.append(buffer[index])
+            }
+            index += 1
+        }
+
+        return LaunchInfo(
+            executablePath: String(decoding: executable, as: UTF8.self),
+            argv: result
+        )
+    }
+
+    // MARK: - Relaunch Target
+
+    struct RelaunchTarget {
+        let pid: Int
+        let executablePath: String
+        let arguments: [String]
+    }
+
+    private static let maxAncestorHops = 4
+
+    // Next.js and npm overwrite their own argv with a display title, so the
+    // process holding the port often cannot be relaunched — walk up to one that can.
+    static func relaunchTarget(pid: Int, projectPath: String) async -> RelaunchTarget? {
+        var candidate: Int? = pid
+
+        for _ in 0..<maxAncestorHops {
+            guard let current = candidate else { return nil }
+
+            let info = launchInfo(pid: current)
+            let directory = await workingDirectory(pid: current)
+
+            guard directory == projectPath else { return nil }
+
+            if isRelaunchable(info) {
+                return RelaunchTarget(
+                    pid: current,
+                    executablePath: info.executablePath,
+                    arguments: Array(info.argv.dropFirst())
+                )
+            }
+
+            candidate = parentPID(of: current)
+        }
+
+        return nil
+    }
+
+    private static func isRelaunchable(_ info: LaunchInfo) -> Bool {
+        guard !info.executablePath.isEmpty,
+              FileManager.default.isExecutableFile(atPath: info.executablePath),
+              let first = info.argv.first,
+              !first.contains(" ") else {
+            return false
+        }
+        return !info.argv.dropFirst().contains(where: \.isEmpty)
+    }
+
+    static func parentPID(of pid: Int) -> Int? {
+        var mib: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, Int32(pid)]
+        var info = kinfo_proc()
+        var size = MemoryLayout<kinfo_proc>.stride
+
+        guard sysctl(&mib, 4, &info, &size, nil, 0) == 0, size > 0 else { return nil }
+
+        let parent = Int(info.kp_eproc.e_ppid)
+        return parent > 1 ? parent : nil
+    }
+
+    static func workingDirectory(pid: Int) async -> String {
+        let output = await Shell.run(
+            "/usr/sbin/lsof",
+            arguments: ["-d", "cwd", "-a", "-p", "\(pid)", "-Fn"]
+        )
+        return parseCWD(output ?? "")
     }
 
     // MARK: - Framework Detection
@@ -93,7 +199,7 @@ enum ProcessResolver {
 
 // MARK: - Private Parsing
 
-private extension ProcessResolver {
+extension ProcessResolver {
     static func parseCWD(_ output: String) -> String {
         for line in output.split(separator: "\n") {
             if line.hasPrefix("n/") {
@@ -101,12 +207,5 @@ private extension ProcessResolver {
             }
         }
         return ""
-    }
-
-    static func parseStartTime(_ output: String) -> Date? {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEE MMM dd HH:mm:ss yyyy"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        return formatter.date(from: output.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 }

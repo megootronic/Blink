@@ -3,53 +3,16 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		AA000001 /* BlinkApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001 /* BlinkApp.swift */; };
-		AA000002 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002 /* AppState.swift */; };
-		AA000003 /* DevServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003 /* DevServer.swift */; };
-		AA000004 /* Simulator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000004 /* Simulator.swift */; };
-		AA000005 /* Shell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000005 /* Shell.swift */; };
-		AA000006 /* PortScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000006 /* PortScanner.swift */; };
-		AA000007 /* ProcessResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000007 /* ProcessResolver.swift */; };
-		AA000008 /* SimulatorMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000008 /* SimulatorMonitor.swift */; };
-		AA000009 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000009 /* MenuBarView.swift */; };
-		AA000010 /* ServerRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000010 /* ServerRowView.swift */; };
-		AA000011 /* SimulatorRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000011 /* SimulatorRowView.swift */; };
-		AA000012 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000012 /* EmptyStateView.swift */; };
-		AA000013 /* RobotHead.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000013 /* RobotHead.swift */; };
-		AA000014 /* MenuBarIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000014 /* MenuBarIcon.swift */; };
-		AA000015 /* PulseDot.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000015 /* PulseDot.swift */; };
-		AA000016 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AB000016 /* Assets.xcassets */; };
-		AA000017 /* HoverRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000017 /* HoverRow.swift */; };
-		AA000018 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000018 /* WelcomeView.swift */; };
-		AA000019 /* WelcomeWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000019 /* WelcomeWindowController.swift */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXFileReference section */
-		AB000001 /* BlinkApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlinkApp.swift; sourceTree = "<group>"; };
-		AB000002 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
-		AB000003 /* DevServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevServer.swift; sourceTree = "<group>"; };
-		AB000004 /* Simulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Simulator.swift; sourceTree = "<group>"; };
-		AB000005 /* Shell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shell.swift; sourceTree = "<group>"; };
-		AB000006 /* PortScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortScanner.swift; sourceTree = "<group>"; };
-		AB000007 /* ProcessResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessResolver.swift; sourceTree = "<group>"; };
-		AB000008 /* SimulatorMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatorMonitor.swift; sourceTree = "<group>"; };
-		AB000009 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
-		AB000010 /* ServerRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerRowView.swift; sourceTree = "<group>"; };
-		AB000011 /* SimulatorRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatorRowView.swift; sourceTree = "<group>"; };
-		AB000012 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
-		AB000013 /* RobotHead.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RobotHead.swift; sourceTree = "<group>"; };
-		AB000014 /* MenuBarIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarIcon.swift; sourceTree = "<group>"; };
-		AB000015 /* PulseDot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PulseDot.swift; sourceTree = "<group>"; };
-		AB000016 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		AB000017 /* HoverRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoverRow.swift; sourceTree = "<group>"; };
-		AB000018 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
-		AB000019 /* WelcomeWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeWindowController.swift; sourceTree = "<group>"; };
 		AC000001 /* Blink.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Blink.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		BA000001 /* Blink */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Blink; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		AD000001 /* Frameworks */ = {
@@ -65,59 +28,9 @@
 		AE000001 = {
 			isa = PBXGroup;
 			children = (
-				AE000002 /* Blink */,
+				BA000001 /* Blink */,
 				AE000006 /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		AE000002 /* Blink */ = {
-			isa = PBXGroup;
-			children = (
-				AB000001 /* BlinkApp.swift */,
-				AB000002 /* AppState.swift */,
-				AE000003 /* Models */,
-				AE000004 /* Services */,
-				AE000005 /* Views */,
-				AB000016 /* Assets.xcassets */,
-			);
-			path = Blink;
-			sourceTree = "<group>";
-		};
-		AE000003 /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				AB000003 /* DevServer.swift */,
-				AB000004 /* Simulator.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
-		AE000004 /* Services */ = {
-			isa = PBXGroup;
-			children = (
-				AB000005 /* Shell.swift */,
-				AB000006 /* PortScanner.swift */,
-				AB000007 /* ProcessResolver.swift */,
-				AB000008 /* SimulatorMonitor.swift */,
-			);
-			path = Services;
-			sourceTree = "<group>";
-		};
-		AE000005 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				AB000009 /* MenuBarView.swift */,
-				AB000010 /* ServerRowView.swift */,
-				AB000011 /* SimulatorRowView.swift */,
-				AB000012 /* EmptyStateView.swift */,
-				AB000013 /* RobotHead.swift */,
-				AB000014 /* MenuBarIcon.swift */,
-				AB000015 /* PulseDot.swift */,
-				AB000017 /* HoverRow.swift */,
-				AB000018 /* WelcomeView.swift */,
-				AB000019 /* WelcomeWindowController.swift */,
-			);
-			path = Views;
 			sourceTree = "<group>";
 		};
 		AE000006 /* Products */ = {
@@ -143,6 +56,9 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				BA000001 /* Blink */,
+			);
 			name = Blink;
 			productName = Blink;
 			productReference = AC000001 /* Blink.app */;
@@ -159,7 +75,7 @@
 				LastUpgradeCheck = 2630;
 			};
 			buildConfigurationList = B2000001 /* Build configuration list for PBXProject "Blink" */;
-			compatibilityVersion = "Xcode 14.0";
+			compatibilityVersion = "Xcode 15.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -181,7 +97,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AA000016 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -192,24 +107,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AA000001 /* BlinkApp.swift in Sources */,
-				AA000002 /* AppState.swift in Sources */,
-				AA000003 /* DevServer.swift in Sources */,
-				AA000004 /* Simulator.swift in Sources */,
-				AA000005 /* Shell.swift in Sources */,
-				AA000006 /* PortScanner.swift in Sources */,
-				AA000007 /* ProcessResolver.swift in Sources */,
-				AA000008 /* SimulatorMonitor.swift in Sources */,
-				AA000009 /* MenuBarView.swift in Sources */,
-				AA000010 /* ServerRowView.swift in Sources */,
-				AA000011 /* SimulatorRowView.swift in Sources */,
-				AA000012 /* EmptyStateView.swift in Sources */,
-				AA000013 /* RobotHead.swift in Sources */,
-				AA000014 /* MenuBarIcon.swift in Sources */,
-				AA000015 /* PulseDot.swift in Sources */,
-				AA000017 /* HoverRow.swift in Sources */,
-				AA000018 /* WelcomeView.swift in Sources */,
-				AA000019 /* WelcomeWindowController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -332,7 +229,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = SARBM2PYZ7;
@@ -346,7 +243,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = co.deliciouslyhuman.Blink;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -363,7 +260,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = SARBM2PYZ7;
@@ -377,7 +274,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = co.deliciouslyhuman.Blink;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

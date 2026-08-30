@@ -1,10 +1,3 @@
-//
-//  WelcomeWindowController.swift
-//  Blink
-//
-//  Shows the welcome window using NSWindow to avoid SwiftUI Window scene issues
-//
-
 import SwiftUI
 
 enum WelcomeWindowController {

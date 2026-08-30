@@ -1,10 +1,3 @@
-//
-//  WelcomeView.swift
-//  Blink
-//
-//  First-launch welcome window
-//
-
 import SwiftUI
 
 struct WelcomeView: View {

@@ -1,21 +1,15 @@
-//
-//  MenuBarIcon.swift
-//  Blink
-//
-//  Renders the robot head to NSImage for the menu bar
-//
-
 import SwiftUI
 
 enum MenuBarIcon {
-    private static let iconSize: CGFloat = 22
+    static let iconSize: CGFloat = 22
+
+    static let awakeOpenness = RobotGeometry.eyeOpenness(for: .open)
+    static let asleepOpenness = RobotGeometry.eyeOpenness(for: .halfClosed)
 
     @MainActor
-    static func render(isActive: Bool) -> NSImage {
+    static func render(eyeOpenness: CGFloat) -> NSImage {
         let size = NSSize(width: iconSize, height: iconSize)
-        let eyeState: RobotHead.EyeState = isActive ? .open : .halfClosed
-
-        let view = MenuBarRobot(size: iconSize, eyeState: eyeState)
+        let view = MenuBarRobot(size: iconSize, eyeOpenness: eyeOpenness)
 
         let renderer = ImageRenderer(content: view)
         renderer.scale = 2.0
@@ -30,11 +24,9 @@ enum MenuBarIcon {
     }
 }
 
-// MARK: - Menu Bar Robot (white face, eyes punched out)
-
 private struct MenuBarRobot: View {
     let size: CGFloat
-    let eyeState: RobotHead.EyeState
+    let eyeOpenness: CGFloat
 
     private var scale: CGFloat { size / RobotGeometry.baseSize }
 
@@ -53,8 +45,7 @@ private struct MenuBarRobot: View {
 
             var facePath = Path(roundedRect: faceRect, cornerRadius: RobotGeometry.faceCornerRadiusRatio * scale)
 
-            let eyeOpenness = RobotGeometry.eyeOpenness(for: eyeState)
-            let eyeCenterY = faceRect.midY - 1.5 * scale
+            let eyeCenterY = faceRect.midY - RobotGeometry.eyeCenterOffsetRatio * scale
             let eyeSpacing = RobotGeometry.eyeSpacingRatio * scale
             let eyeWidth = RobotGeometry.eyeWidthRatio * scale
             let fullEyeHeight = RobotGeometry.eyeHeightRatio * scale

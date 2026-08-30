@@ -1,14 +1,11 @@
-//
-//  Shell.swift
-//  Blink
-//
-//  Lightweight async wrapper for running shell commands
-//
-
 import Foundation
 
 enum Shell {
-    static func run(_ path: String, arguments: [String] = []) async -> String? {
+    static func run(
+        _ path: String,
+        arguments: [String] = [],
+        mergingErrors: Bool = false
+    ) async -> String? {
         await withCheckedContinuation { continuation in
             let process = Process()
             let pipe = Pipe()
@@ -16,9 +13,8 @@ enum Shell {
             process.executableURL = URL(fileURLWithPath: path)
             process.arguments = arguments
             process.standardOutput = pipe
-            process.standardError = FileHandle.nullDevice
+            process.standardError = mergingErrors ? pipe : FileHandle.nullDevice
 
-            // Ensure Xcode developer tools are found
             var env = ProcessInfo.processInfo.environment
             if let xcodePath = [
                 "/Applications/Xcode.app/Contents/Developer",

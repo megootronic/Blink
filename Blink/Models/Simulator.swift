@@ -1,17 +1,11 @@
-//
-//  Simulator.swift
-//  Blink
-//
-//  Model representing a booted iOS simulator
-//
-
 import Foundation
 
 struct Simulator: Identifiable, Hashable {
-    let id: String // UDID
+    var id: String { udid }
+
+    let udid: String
     let name: String
     let runtime: String
-    let state: String
     let runningApp: AppInfo?
 
     struct AppInfo: Hashable {

@@ -1,10 +1,3 @@
-//
-//  PortScanner.swift
-//  Blink
-//
-//  Scans for TCP ports in LISTEN state using lsof
-//
-
 import Foundation
 
 struct ListeningPort {

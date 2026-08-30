@@ -1,28 +1,10 @@
-//
-//  HoverRow.swift
-//  Blink
-//
-//  Shared row styling: color bar, hover background, and scale effect
-//
-
 import SwiftUI
 
-// MARK: - Color Bar
-
-struct ColorBar: View {
-    let color: Color
-
-    var body: some View {
-        RoundedRectangle(cornerRadius: 1.5)
-            .fill(color)
-            .frame(width: 3, height: 32)
-            .padding(.trailing, 10)
-    }
-}
-
-// MARK: - Hover Row Modifier
-
 struct HoverRowStyle: ViewModifier {
+    static let horizontalPadding: CGFloat = 8.5
+
+    @Environment(ScrollActivity.self) private var scrollActivity
+
     @State private var isHovered = false
 
     let onHoverChanged: ((Bool) -> Void)?
@@ -33,7 +15,7 @@ struct HoverRowStyle: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .padding(.horizontal, 10)
+            .padding(.horizontal, Self.horizontalPadding)
             .padding(.vertical, 8)
             .contentShape(Rectangle())
             .background(
@@ -43,6 +25,7 @@ struct HoverRowStyle: ViewModifier {
             .scaleEffect(isHovered ? 1.005 : 1.0)
             .animation(.easeOut(duration: 0.15), value: isHovered)
             .onHover { hovering in
+                if hovering && scrollActivity.isScrolling { return }
                 isHovered = hovering
                 onHoverChanged?(hovering)
             }
