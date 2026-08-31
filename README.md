@@ -79,7 +79,7 @@ PRs welcome. Keep it clean.
 
 ## Author
 
-Built by [Mo](https://mo.software)
+Engineered at [mo.software](https://mo.software)
 
 ## License
 
