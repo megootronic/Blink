@@ -2,6 +2,9 @@ import AppKit
 import Foundation
 
 enum HerdrMonitor {
+    private static var cachedBinary: String?
+    private static var didResolveBinary = false
+
     static func scan() async -> [HerdrAgent] {
         await withCheckedContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
@@ -14,6 +17,8 @@ enum HerdrMonitor {
         guard let binary = resolveBinary() else { return [] }
 
         guard let data = try? run(binary, ["api", "snapshot"]) else {
+            // Binary may have moved — allow rediscovery next tick.
+            invalidateBinaryCache()
             return []
         }
 
@@ -22,14 +27,13 @@ enum HerdrMonitor {
 
     static func focus(agent: HerdrAgent) {
         DispatchQueue.main.async {
-            activateOrLaunchTerminal {
-                DispatchQueue.global(qos: .userInitiated).async {
-                    guard let binary = resolveBinary() else { return }
-                    if !agent.workspaceId.isEmpty {
-                        _ = try? run(binary, ["workspace", "focus", agent.workspaceId])
-                    }
-                    _ = try? run(binary, ["agent", "focus", agent.paneId])
+            activateHostTerminal()
+            DispatchQueue.global(qos: .userInitiated).async {
+                guard let binary = resolveBinary() else { return }
+                if !agent.workspaceId.isEmpty {
+                    _ = try? run(binary, ["workspace", "focus", agent.workspaceId])
                 }
+                _ = try? run(binary, ["agent", "focus", agent.paneId])
             }
         }
     }
@@ -39,61 +43,108 @@ enum HerdrMonitor {
         _ = try? run(binary, ["pane", "close", paneId])
     }
 
-    // MARK: - Terminal
+    // MARK: - Host terminal (discovered, not hardcoded)
 
-    private static let terminalApps: [(bundleId: String, path: String)] = [
-        ("com.mitchellh.ghostty", "/Applications/Ghostty.app"),
-        ("fun.tw93.kaku", "/Applications/Kaku.app"),
-    ]
-
-    private static func activateOrLaunchTerminal(then: @escaping () -> Void) {
-        for app in terminalApps {
-            if let running = NSRunningApplication.runningApplications(
-                withBundleIdentifier: app.bundleId
-            ).first {
-                running.activate()
-                then()
-                return
-            }
-        }
-
-        for app in terminalApps {
-            let url = URL(fileURLWithPath: app.path)
-            guard FileManager.default.fileExists(atPath: app.path) else { continue }
-            let configuration = NSWorkspace.OpenConfiguration()
-            configuration.activates = true
-            NSWorkspace.shared.openApplication(at: url, configuration: configuration) { _, _ in
-                then()
-            }
-            return
-        }
-
-        then()
+    /// Bring forward whatever GUI app is hosting a live `herdr` client by
+    /// walking that process's parent chain. No fixed terminal list.
+    private static func activateHostTerminal() {
+        guard let app = discoverHostTerminalApp() else { return }
+        app.activate()
     }
 
-    // MARK: - Binary
+    private static func discoverHostTerminalApp() -> NSRunningApplication? {
+        guard let data = try? run("/usr/bin/pgrep", ["-f", "herdr"]),
+              let text = String(data: data, encoding: .utf8) else {
+            return nil
+        }
+
+        for token in text.split(whereSeparator: \.isNewline) {
+            guard let pid = Int32(token.trimmingCharacters(in: .whitespaces)) else { continue }
+            if let app = appOwning(pid: pid) {
+                return app
+            }
+        }
+        return nil
+    }
+
+    private static func appOwning(pid: Int32) -> NSRunningApplication? {
+        var current = pid
+        for _ in 0..<16 {
+            guard let info = processInfo(pid: current) else { return nil }
+
+            // Prefer a regular GUI app at this PID.
+            if let app = NSRunningApplication(processIdentifier: current),
+               app.activationPolicy == .regular {
+                return app
+            }
+
+            // Or an ancestor whose command path lives inside a .app bundle.
+            if info.command.contains(".app/"),
+               let app = NSRunningApplication(processIdentifier: current) {
+                return app
+            }
+
+            guard let ppid = info.ppid, ppid > 1 else { return nil }
+            current = ppid
+        }
+        return nil
+    }
+
+    private static func processInfo(pid: Int32) -> (ppid: Int32?, command: String)? {
+        guard let data = try? run(
+            "/bin/ps",
+            ["-o", "ppid=,command=", "-p", "\(pid)"]
+        ),
+        let line = String(data: data, encoding: .utf8)?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+        !line.isEmpty else {
+            return nil
+        }
+
+        let parts = line.split(maxSplits: 1, whereSeparator: \.isWhitespace)
+        guard let ppidToken = parts.first,
+              let ppid = Int32(ppidToken) else {
+            return (nil, line)
+        }
+        let command = parts.count > 1 ? String(parts[1]) : ""
+        return (ppid, command)
+    }
+
+    // MARK: - Binary (env override or login-shell PATH)
+
+    private static func invalidateBinaryCache() {
+        didResolveBinary = false
+        cachedBinary = nil
+    }
 
     private static func resolveBinary() -> String? {
-        if let override = ProcessInfo.processInfo.environment["HERDR_BIN"],
+        if didResolveBinary { return cachedBinary }
+
+        if let override = ProcessInfo.processInfo.environment["HERDR_BIN"]?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
            !override.isEmpty,
            FileManager.default.isExecutableFile(atPath: override) {
+            didResolveBinary = true
+            cachedBinary = override
             return override
         }
 
-        for candidate in ["/usr/local/bin/herdr", "/opt/homebrew/bin/herdr"] {
-            if FileManager.default.isExecutableFile(atPath: candidate) {
-                return candidate
-            }
+        // Resolve via the user's login shell so Homebrew / ~/.local / custom
+        // installs work without baking in brew prefixes.
+        let shell = ProcessInfo.processInfo.environment["SHELL"] ?? "/bin/zsh"
+        let path: String?
+        if let data = try? run(shell, ["-lc", "command -v herdr"]),
+           let resolved = String(data: data, encoding: .utf8)?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+           !resolved.isEmpty,
+           FileManager.default.isExecutableFile(atPath: resolved) {
+            path = resolved
+        } else {
+            path = nil
         }
 
-        // Not installed / not on PATH → scan returns [] and the AGENTS section stays hidden.
-        guard let which = try? run("/usr/bin/which", ["herdr"]),
-              let path = String(data: which, encoding: .utf8)?
-                .trimmingCharacters(in: .whitespacesAndNewlines),
-              !path.isEmpty,
-              FileManager.default.isExecutableFile(atPath: path) else {
-            return nil
-        }
+        didResolveBinary = true
+        cachedBinary = path
         return path
     }
 
@@ -104,6 +155,12 @@ enum HerdrMonitor {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: path)
         process.arguments = arguments
+
+        var environment = ProcessInfo.processInfo.environment
+        if environment["HOME"] == nil {
+            environment["HOME"] = NSHomeDirectory()
+        }
+        process.environment = environment
 
         let stdout = Pipe()
         let stderr = Pipe()
