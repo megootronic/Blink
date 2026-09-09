@@ -35,7 +35,8 @@ extension AppState {
                         command: port.command,
                         framework: framework,
                         projectName: projectName,
-                        projectPath: info.workingDirectory
+                        projectPath: info.workingDirectory,
+                        metrics: nil
                     )
                 }
             }
@@ -44,6 +45,12 @@ extension AppState {
             for await server in group {
                 if let server { results.append(server) }
             }
+
+            let metrics = await ProcessMonitor.sample(pids: results.map(\.pid))
+            for index in results.indices {
+                results[index].metrics = metrics[results[index].pid]
+            }
+
             return results.sorted { $0.port < $1.port }
         }
     }

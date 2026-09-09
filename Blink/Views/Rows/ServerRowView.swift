@@ -84,10 +84,22 @@ private extension ServerRowView {
                 .font(.system(size: 10))
                 .foregroundStyle(Color.alert)
         } else {
-            Text(server.framework == .unknown ? server.command : server.framework.rawValue)
+            Text(serverDetails)
                 .font(.system(size: 10))
                 .foregroundStyle(.secondary)
+                .lineLimit(1)
         }
+    }
+
+    var serverDetails: String {
+        let framework = server.framework == .unknown ? server.command : server.framework.rawValue
+        guard let metrics = server.metrics else { return framework }
+
+        let memory = ByteCountFormatter.string(
+            fromByteCount: metrics.residentMemoryBytes,
+            countStyle: .memory
+        )
+        return "\(framework) \u{00B7} CPU \(String(format: "%.1f", metrics.cpuPercent))% \u{00B7} \(memory)"
     }
 
     var actions: some View {

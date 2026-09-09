@@ -11,10 +11,16 @@ struct DevServer: Identifiable, Hashable {
     let framework: Framework
     let projectName: String
     let projectPath: String
+    var metrics: ProcessMetrics?
 
     var localhostURL: URL? {
         URL(string: "http://localhost:\(port)")
     }
+}
+
+struct ProcessMetrics: Hashable {
+    let cpuPercent: Double
+    let residentMemoryBytes: Int64
 }
 
 // MARK: - Framework
