@@ -51,6 +51,14 @@ final class MenuBarController: NSObject, NSApplicationDelegate {
 
         startIconUpdates()
 
+        NotificationCenter.default.addObserver(
+            forName: .blinkClosePanel,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.closePanel()
+        }
+
         if !hasLaunchedBefore {
             WelcomeWindowController.show()
         }

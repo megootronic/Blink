@@ -5,6 +5,7 @@ import SwiftUI
 final class AppState {
     var servers: [DevServer] = []
     var simulators: [Simulator] = []
+    var herdrAgents: [HerdrAgent] = []
     private var isScanning = false
     var isInitialLoad = true
     var lastEvent: BlinkEvent = .idle
@@ -22,11 +23,12 @@ final class AppState {
     // would otherwise stay suppressed forever.
     private var killedPorts: [Int: Int] = [:]
     private var killedSimUDIDs: Set<String> = []
+    private var killedPaneIDs: Set<String> = []
 
     private var relaunched: [Int: RelaunchedServer] = [:]
 
     private(set) var isActive: Bool = false
-    var totalCount: Int { servers.count + simulators.count }
+    var totalCount: Int { servers.count + simulators.count + herdrAgents.count }
 
     // MARK: - Blink Events
 
@@ -77,19 +79,23 @@ final class AppState {
 
         async let scannedServers = scanServers()
         async let scannedSims = SimulatorMonitor.scan()
+        async let scannedAgents = HerdrMonitor.scan()
 
-        let (newServers, newSims) = await (scannedServers, scannedSims)
+        let (newServers, newSims, newAgents) = await (scannedServers, scannedSims, scannedAgents)
 
         let activePIDs = Set(newServers.map(\.pid))
         killedPIDs = killedPIDs.intersection(activePIDs)
         killedPorts = killedPorts.filter { activePIDs.contains($0.value) }
         let activeSimUDIDs = Set(newSims.map(\.id))
         killedSimUDIDs = killedSimUDIDs.intersection(activeSimUDIDs)
+        let activePaneIDs = Set(newAgents.map(\.paneId))
+        killedPaneIDs = killedPaneIDs.intersection(activePaneIDs)
 
         let filteredServers = newServers.filter {
             !killedPIDs.contains($0.pid) && killedPorts[$0.port] == nil
         }
         let filteredSims = newSims.filter { !killedSimUDIDs.contains($0.id) }
+        let filteredAgents = newAgents.filter { !killedPaneIDs.contains($0.paneId) }
 
         clearStaleFailures(among: filteredServers)
         let mergedServers = preservingRestartingRows(filteredServers)
@@ -99,6 +105,9 @@ final class AppState {
         }
         if simulators != filteredSims {
             simulators = filteredSims
+        }
+        if herdrAgents != filteredAgents {
+            herdrAgents = filteredAgents
         }
         if isInitialLoad {
             isInitialLoad = false
@@ -235,6 +244,20 @@ final class AppState {
 
         Task { await SimulatorMonitor.shutdownAll() }
         cascadeRemoval(count: simulators.count) { self.simulators.removeFirst() }
+    }
+
+    func focusAgent(_ agent: HerdrAgent) {
+        NotificationCenter.default.post(name: .blinkClosePanel, object: nil)
+        HerdrMonitor.focus(agent: agent)
+    }
+
+    func stopAgent(_ agent: HerdrAgent) {
+        lastEvent = .killed
+        killedPaneIDs.insert(agent.paneId)
+        withAnimation(.easeOut(duration: 0.3)) {
+            herdrAgents.removeAll { $0.paneId == agent.paneId }
+        }
+        HerdrMonitor.closePane(paneId: agent.paneId)
     }
 
     private func cascadeRemoval(count: Int, removeFirst: @escaping () -> Void) {

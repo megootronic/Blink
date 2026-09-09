@@ -76,7 +76,9 @@ private extension MenuBarView {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .transition(.opacity)
-        } else if appState.servers.isEmpty && appState.simulators.isEmpty {
+        } else if appState.servers.isEmpty
+                    && appState.simulators.isEmpty
+                    && appState.herdrAgents.isEmpty {
             EmptyStateView()
                 .transition(.opacity.combined(with: .scale(scale: 0.97)))
         } else {
@@ -87,6 +89,9 @@ private extension MenuBarView {
                     }
                     if !appState.simulators.isEmpty {
                         simulatorSection
+                    }
+                    if !appState.herdrAgents.isEmpty {
+                        herdrSection
                     }
                 }
                 .padding(12)
@@ -138,6 +143,20 @@ private extension MenuBarView {
 
             ForEach(appState.simulators) { simulator in
                 SimulatorRowView(simulator: simulator)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .top).combined(with: .opacity),
+                        removal: .move(edge: .trailing).combined(with: .opacity)
+                    ))
+            }
+        }
+    }
+
+    var herdrSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionHeader("AGENTS", icon: "cpu", action: nil) {}
+
+            ForEach(appState.herdrAgents) { agent in
+                HerdrAgentRowView(agent: agent)
                     .transition(.asymmetric(
                         insertion: .move(edge: .top).combined(with: .opacity),
                         removal: .move(edge: .trailing).combined(with: .opacity)
