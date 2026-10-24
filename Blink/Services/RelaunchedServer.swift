@@ -27,7 +27,10 @@ final class RelaunchedServer {
         let tail = tail
         pipe.fileHandleForReading.readabilityHandler = { handle in
             let data = handle.availableData
-            guard !data.isEmpty else { return }
+            guard !data.isEmpty else {
+                handle.readabilityHandler = nil
+                return
+            }
             tail.append(String(decoding: data, as: UTF8.self))
         }
 
